@@ -8,10 +8,10 @@ namespace mcproto {
 
 struct Handshake : Message {
     Handshake() = default;
+    Handshake(const Handshake& other) {*this = other;}
+
     ~Handshake() = default;
 
-    msg_type type {e_handshake};
-    
     mcproto::VarInt protocol_version;
     mcproto::VarInt next_state;
     mcproto::String server_address;
@@ -19,28 +19,48 @@ struct Handshake : Message {
 
     virtual int encode(uint8_t* begin) override;
     virtual int decode(uint8_t* begin) override;
+
+    Handshake& operator= (const Handshake& other) {
+        size = other.size;
+        protocol_version = other.protocol_version;
+        next_state = other.next_state;
+        server_address = other.server_address;
+        server_port = other.server_port;
+        return *this;
+    }
 };
 
 struct StatusRequest : Message {
     StatusRequest() = default;
+    StatusRequest(const StatusRequest& other) {*this = other;}
     ~StatusRequest() = default;
 
-    msg_type type {e_status_request};
+    uint32_t size {0};
 
     virtual int encode(uint8_t* begin) override;
     virtual int decode(uint8_t* begin) override;
+
+    StatusRequest& operator= (const StatusRequest& other) {
+        size = other.size;
+        return *this;
+    }
 };
 
 struct StatusResponse : Message {
     StatusResponse() = default;
+    StatusResponse(const StatusRequest& other) {*this = other;}
     ~StatusResponse() = default;
-
-    msg_type type {e_status_response};
 
     mcproto::String json_response;
 
     virtual int encode(uint8_t* begin) override;
     virtual int decode(uint8_t* begin) override;
+
+    StatusResponse& operator= (const StatusResponse& other) {
+        size = other.size;
+        json_response = other.json_response;
+        return *this;
+    }
 };
 
 };

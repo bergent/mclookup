@@ -9,123 +9,110 @@ namespace mcproto {
 struct Pushable {
     virtual ~Pushable() = default;
     
-    int pushed {0};
-    uint8_t* encoded = nullptr;
-
-    virtual int push(uint8_t* buf) = 0;
-    virtual int encode() = 0;
-    virtual int decode(uint8_t* buf, int offset) = 0;
-};
-
-
-struct VarBase {
-    const uint8_t NEXT_BIT = 0x80;
-    const uint8_t DATA_MASK = 0x7F;
-    const int SHIFT = 7;
-
-    virtual ~VarBase() = default;
-
     int size {0};
-    uint8_t position {0};
-    uint8_t* encoded {nullptr};
+
+    virtual int encode(uint8_t* buf) = 0;
+    virtual int decode(uint8_t* buf) = 0;
 };
 
 
-struct VarInt : VarBase, Pushable {
-    VarInt() = default;
-    ~VarInt() {delete[] encoded;}
+inline constexpr uint8_t VAR_DATA_MASK {0x7f};
+inline constexpr uint8_t VAR_NEXT_BIT {0x80};
+inline constexpr uint8_t VAR_BYTE_SHIFT {7};
 
-    VarInt(int32_t data)
-        : underlying {data}
+struct VarInt : Pushable {
+    VarInt() = default;
+    ~VarInt() = default;
+
+    VarInt(const VarInt& other)
+        : value {other.value}
     {}
 
-    uint8_t* encoded = new uint8_t[5];
-    int32_t underlying {0};
+    VarInt(int32_t data)
+        : value {data}
+    {}
+    
+    int32_t value {0};
 
-    virtual int push(uint8_t* buf) override;
-    virtual int encode() override;
-    virtual int decode(uint8_t* buf, int offset) override;
+    virtual int encode(uint8_t* buf) override;
+    virtual int decode(uint8_t* buf) override;
 
-    VarInt& operator= (VarInt&& other) {
-        underlying = other.underlying;
-        encoded = other.encoded;
-        other.encoded = nullptr;
+    VarInt& operator= (const VarInt& other) {
+        value = other.value;
         return *this;
     }
 };
 
-struct VarLong : VarBase, Pushable {
+struct VarLong : Pushable {
     VarLong() = default;
-    ~VarLong() {delete[] encoded;}
+    ~VarLong() = default;
 
-    VarLong(int64_t data) 
-        : underlying {data}
+    VarLong(const VarLong& other)
+        : value {other.value}
     {}
 
-    uint8_t* encoded = new uint8_t[10];
-    int64_t underlying {0};
+    VarLong(int64_t data) 
+        : value {data}
+    {}
+    
+    int64_t value {0};
 
-    virtual int push(uint8_t* buf) override;
-    virtual int encode() override;
-    virtual int decode(uint8_t* buf, int offset) override;
-
-    VarLong& operator= (VarLong&& other) {
-        underlying = other.underlying;
-        encoded = other.encoded;
-        other.encoded = nullptr;
+    virtual int encode(uint8_t* buf) override;
+    virtual int decode(uint8_t* buf) override;
+    
+    VarLong& operator= (const VarLong& other) {
+        value = other.value;
         return *this;
     }
 };
 
 struct String : Pushable {
     String() = default;
-    ~String() {delete[] encoded;}
+    ~String() = default;
+
+    String(const String& other) 
+        : str {other.str},
+          str_size {other.str_size} 
+    {}
 
     String(const std::string& data)
-        : underlying {data}, 
-          underlying_size {static_cast<int32_t>(data.size())}
-    {
-        encoded = new uint8_t[underlying.size() + underlying_size.size];
-    }
+        : str {data}, 
+          str_size {static_cast<int32_t>(data.size())}
+    {}
 
-    int size {0};
-    std::string underlying {""};
-    VarInt underlying_size {0};
+    std::string str {""};
+    VarInt str_size {0};
 
-    virtual int push(uint8_t* buf) override;
-    virtual int encode() override;
-    virtual int decode(uint8_t* buf, int offset) override;
-
-    String& operator= (String&& other) {
-        underlying = std::move(other.underlying);
-        underlying_size = std::move(other.underlying_size);
-        encoded = other.encoded;
-        other.encoded = nullptr;
+    virtual int encode(uint8_t* buf) override;
+    virtual int decode(uint8_t* buf) override;
+    
+    String& operator= (const String& other) {
+        str = other.str;
+        str_size = other.str_size;
         return *this;
     }
 };
 
 struct UShort : Pushable {
     UShort() = default;
-    ~UShort() {delete[] encoded;}
+    ~UShort() = default;
+    
+    UShort(const UShort& other)
+        : value {other.value}
+    {}
 
     UShort(uint16_t data)
-        : underlying {data}
-    {
-        encoded = new uint8_t[2];
-    }
+        : value {data}
+    {}
     
     int size {2};
-    uint16_t underlying;
+    uint16_t value;
 
-    virtual int push(uint8_t* buf) override;
-    virtual int encode() override;
-    virtual int decode(uint8_t* buf, int offset) override;
-
-    UShort& operator= (UShort&& other) {
-        underlying = other.underlying;
-        encoded = other.encoded;
-        other.encoded = nullptr;
+    virtual int encode(uint8_t* buf) override;
+    virtual int decode(uint8_t* buf) override;
+    
+    UShort& operator= (const UShort& other) {
+        value = other.value;
         return *this;
     }
 };

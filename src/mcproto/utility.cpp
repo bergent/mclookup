@@ -5,13 +5,12 @@
 namespace mcproto {
     
 void push_field(uint8_t*& buf, Pushable* field) {
-    field->encode();
-    int shift = field->push(buf);
+    int shift = field->encode(buf);
     buf = buf + shift;
 }
 
 void get_field(uint8_t*& buf, Pushable* field) {
-    int shift = field->decode(buf, 0);
+    int shift = field->decode(buf);
     buf += shift;
 }
 
