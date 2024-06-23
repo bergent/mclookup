@@ -1,4 +1,4 @@
-#include "mcproto/packet.h"
+#include "proto/packet.h"
 #include <cstring>
 
 namespace mcproto {

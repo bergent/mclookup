@@ -1,6 +1,6 @@
-#include "mcproto/messages.h"
-#include "mcproto/base_message.h"
-#include "mcproto/utility.h"
+#include "proto/messages.h"
+#include "proto/base_message.h"
+#include "proto/utility.h"
 #include <cstring>
 
 namespace mcproto {

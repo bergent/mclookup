@@ -1,8 +1,8 @@
 #ifndef __H_MCPROTO_HEADER__
 #define __H_MCPROTO_HEADER__
 
-#include "mcproto/base_message.h"
-#include "mcproto/dtypes.h"
+#include "proto/base_message.h"
+#include "proto/dtypes.h"
 
 namespace mcproto {
 

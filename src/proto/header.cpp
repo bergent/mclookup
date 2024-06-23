@@ -1,5 +1,5 @@
-#include "mcproto/header.h"
-#include "mcproto/utility.h"
+#include "proto/header.h"
+#include "proto/utility.h"
 
 namespace mcproto {
 

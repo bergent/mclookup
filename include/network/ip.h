@@ -8,6 +8,15 @@
 
 namespace mcnet {
 
+struct DAData {
+    uint16_t port_start {};
+    uint16_t port_finish {};
+    size_t ip_start {};
+    size_t ip_finish {};
+    bool human_ip {false};
+    bool human_port {false};
+};
+
 class DynamicAddress {
 public:
     static const uint32_t MAX_IP_VAL {4294967295};
@@ -15,18 +24,23 @@ public:
 
 public:
     DynamicAddress();
+
     DynamicAddress(size_t ip_start, size_t ip_finish,
-                   uint16_t port_start = 0, uint16_t port_finish = MAX_PORT_VAL);
+                   uint16_t port_start = 0, uint16_t port_finish = MAX_PORT_VAL,
+                   bool human_ip = false, bool human_port = true);
+
     DynamicAddress(const std::string& ip_start, const std::string& ip_finish,
-                   uint16_t port_start = 0, uint16_t port_finish = MAX_PORT_VAL);
+                   uint16_t port_start = 0, uint16_t port_finish = MAX_PORT_VAL,
+                   bool human_port = true);
 
     bool next();
     bool is_completed();
     
+    sockaddr_in& get_addr();
     std::string get_ip_str();
     uint16_t get_port() const;
+    DAData get_data() const;
 
-    const sockaddr_in& get_addr() const; 
  
 private:
     bool _human_ip {false};

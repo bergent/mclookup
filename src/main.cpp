@@ -1,8 +1,9 @@
-#include "mcproto/base_message.h"
-#include "mcproto/dtypes.h"
-#include "mcproto/header.h"
-#include "mcproto/messages.h"
-#include "mcproto/packet.h"
+#include "core/scheduler.h"
+#include "proto/base_message.h"
+#include "proto/dtypes.h"
+#include "proto/header.h"
+#include "proto/messages.h"
+#include "proto/packet.h"
 #include "network/ip.h"
 #include "network/socket.h"
 #include <arpa/inet.h>
@@ -58,17 +59,9 @@ void test_single() {
 }
 
 int main() {
-    mcnet::DynamicAddress daddr {"8.8.8.8", "8.8.8.9", 1000, 1010};
-    
-    while (true) {
-        std::cout << daddr.get_ip_str() << ":" << daddr.get_port() << '\n';
+    mcnet::DynamicAddress daddr {"8.8.8.8", "8.8.8.8", 0, mcnet::DynamicAddress::MAX_PORT_VAL};
 
-        if (!daddr.next()) {
-            break;
-        }
-    }
+    mccore::Scheduler scheduler {daddr, 1};
+    scheduler.run();
 
-    if (daddr.is_completed()) {
-        std::cout << "Completed!\n";
-    }
 }
