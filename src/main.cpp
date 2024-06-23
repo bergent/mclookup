@@ -3,6 +3,7 @@
 #include "mcproto/header.h"
 #include "mcproto/messages.h"
 #include "mcproto/packet.h"
+#include "network/ip.h"
 #include "network/socket.h"
 #include <arpa/inet.h>
 #include <cstring>
@@ -57,77 +58,17 @@ void test_single() {
 }
 
 int main() {
-    uint8_t buf [100];
-    uint8_t status_buf [100];
+    mcnet::DynamicAddress daddr {"8.8.8.8", "8.8.8.9", 1000, 1010};
     
-    mcproto::Packet packet; 
-    packet.header.message_type = mcproto::VarInt(mcproto::e_handshake);
-    
-    packet.body = new mcproto::Handshake;
-    auto hs = static_cast<mcproto::Handshake*>(packet.body);
-    hs->protocol_version = mcproto::VarInt(765);
-    hs->server_address = mcproto::String("89.33.12.0");
-    hs->server_port = mcproto::UShort(25565);
-    hs->next_state = mcproto::VarInt(1);
+    while (true) {
+        std::cout << daddr.get_ip_str() << ":" << daddr.get_port() << '\n';
 
-    int encoded = packet.encode(buf);
-    std::cout << "Encoded " << encoded << " bytes\n";
-
-
-    mcproto::Packet recv;
-    int decoded_hdr = recv.header.decode(buf);
-
-    if (recv.header.message_type.value == mcproto::e_handshake)
-        recv.body = new mcproto::Handshake;
-
-    auto ptr = static_cast<mcproto::Handshake*>(recv.body);
-
-    int decoded_body = recv.body->decode(buf + decoded_hdr);
-    std::cout << "Decoded header: " << decoded_hdr << " bytes\n";
-    std::cout << "Decoded body: " << decoded_body << " bytes\n";
-    std::cout << "Decoded total: " << decoded_hdr + decoded_body << " bytes\n";
-
-    std::cout << "Protocol Version: " << ptr->protocol_version.value << '\n';
-    std::cout << "Server Address: " << ptr->server_address.str << '\n';
-    std::cout << "Server Port: " << ptr->server_port.value << '\n';
-    std::cout << "Next State: " << ptr->next_state.value << '\n';
-
-    mcproto::Packet status;
-    status.header.message_type = mcproto::VarInt(mcproto::e_status_request);
-    status.body = new mcproto::StatusRequest;
-    
-    int status_encoded = status.encode(status_buf);
-
-    std::cout << "Status Encoded: " << status_encoded << " bytes\n";
-
-
-    int fd = socket(AF_INET, SOCK_STREAM, 0);
-    
-    std::string ip {"89.33.12.0"};
-    uint16_t port = 25565;
-    addr mc_server;
-    
-
-    inet_pton(AF_INET, ip.data(), &mc_server.sin.sin_addr);
-    mc_server.sin.sin_family = AF_INET;
-    mc_server.sin.sin_port = htons(port);
-    
-    int connect_rc = connect(fd, &mc_server.sa, sizeof(mc_server));
-    if (connect_rc != 0) {
-        perror("Connect");
+        if (!daddr.next()) {
+            break;
+        }
     }
 
-    int send_hs_rc = send(fd, buf, encoded, 0);
-    if (send_hs_rc < 0) {
-        perror("Send Handshake");
+    if (daddr.is_completed()) {
+        std::cout << "Completed!\n";
     }
-
-    int send_status_rc = send(fd, status_buf, status_encoded, 0);
-    if (send_status_rc < 0) {
-        perror("Send Status");
-    }
-
-    uint8_t recv_buf [1024];
-
-
 }
